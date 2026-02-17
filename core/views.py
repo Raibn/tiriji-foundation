@@ -11,6 +11,13 @@ def about(request):
 def contact(request):
     return render(request, 'core/contact.html')
 
+def children(request):
+    return render(request, 'core/children.html')
+
+def women(request):
+    return render(request, 'core/women.html')   
+
+
 def volunteer(request):
     return render(request, 'core/volunteer.html')
 
@@ -103,3 +110,30 @@ def resource_detail(request, resource_id):
 def testimonial_detail(request, testimonial_id):
     # Placeholder for testimonial detail view
     return render(request, 'core/testimonial_detail.html', {'testimonial_id': testimonial_id})
+
+def gallery_detail(request, gallery_id):
+    # Placeholder for gallery detail view
+    return render(request, 'core/gallery_detail.html', {'gallery_id': gallery_id})  
+
+def team_member_detail(request, member_id):
+    # Placeholder for team member detail view
+    return render(request, 'core/team_member_detail.html', {'member_id': member_id})
+
+def partner_detail(request, partner_id):
+    # Placeholder for partner detail view
+    return render(request, 'core/partner_detail.html', {'partner_id': partner_id})
+
+def career_detail(request, career_id):
+    # Placeholder for career detail view
+    return render(request, 'core/career_detail.html', {'career_id': career_id})
+
+def blog(request):
+    return render(request, 'core/blog.html')
+
+def blog_detail(request, blog_id):
+    # Placeholder for blog detail view
+    return render(request, 'core/blog_detail.html', {'blog_id': blog_id})
+
+def feedback_success(request):
+    return render(request, 'core/feedback_success.html')
+ 

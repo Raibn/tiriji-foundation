@@ -1,31 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <h1>About Us</h1>
-    </header>
-    <main>
-        <section>
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="page-hero">
+    <div class="container">
+        <h1>About Tiriji Foundation</h1>
+        <p>
+            A regenerative movement rooted in Ubuntu, inspiring holistic
+            transformation across communities.
+        </p>
+    </div>
+</section>
+
+
+<!-- MISSION & VISION -->
+<section class="container mission-vision">
+    <div class="grid-2">
+        <div class="card">
             <h2>Our Mission</h2>
-            <p>We strive to provide the best services to our customers.</p>
-        </section>
-        <section>
-            <h2>Our Team</h2>
-            <p>Meet our dedicated team of professionals.</p>
-        </section>
-        <section>
-            <h2>Contact Us</h2>
-            <p>If you have any questions, feel free to reach out!</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2023 TIRJIJI. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+            <p>
+                To inspire action for regeneration by nurturing leaders,
+                restoring dignity, and building thriving communities through
+                holistic systems transformation.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Our Vision</h2>
+            <p>
+                A world where individuals and communities live in harmony —
+                with themselves, with one another, and with nature.
+            </p>
+        </div>
+    </div>
+</section>
+
+
+<!-- APPROACH -->
+<section class="approach-section">
+    <div class="container">
+        <h2>Our Approach</h2>
+        <p>
+            We use a holistic systems framework grounded in Ubuntu principles.
+            Our programs integrate leadership development, reconciliation,
+            regenerative agriculture, gender equity, and youth empowerment
+            to create sustainable impact.
+        </p>
+    </div>
+</section>
+
+
+<!-- TEAM SECTION -->
+<section class="container">
+    <h2 class="section-title">Meet Our Team</h2>
+
+    <div class="team-grid">
+
+        <div class="team-card">
+            <img src="{% static 'core/images/team-placeholder.jpg' %}" alt="Chief Visionary Officer">
+            <h3>Prof. Karambu Ringera</h3>
+            <p class="role">Chief Visionary Officer</p>
+            <p>
+                Visionary leader guiding the regenerative transformation
+                philosophy of the foundation.
+            </p>
+        </div>
+
+        <div class="team-card">
+            <img src="{% static 'core/images/team-placeholder.jpg' %}" alt="Board Chair">
+            <h3>Evans M. Njoki</h3>
+            <p class="role">Founding Board Chair</p>
+            <p>
+                Providing strategic leadership and governance oversight.
+            </p>
+        </div>
+
+        <div class="team-card">
+            <img src="{% static 'core/images/team-placeholder.jpg' %}" alt="Board Secretary">
+            <h3>Naomi M. Mwangi</h3>
+            <p class="role">Founding Board Secretary</p>
+            <p>
+                Supporting organizational administration and accountability.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- PARTNERS -->
+<section class="partners-section">
+    <div class="container">
+        <h2 class="section-title">Our Partners</h2>
+
+        <div class="partners-grid">
+            <div class="partner-card">Partner Organization 1</div>
+            <div class="partner-card">Partner Organization 2</div>
+            <div class="partner-card">Partner Organization 3</div>
+            <div class="partner-card">Partner Organization 4</div>
+        </div>
+    </div>
+</section>
+
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Join the Movement</h2>
+        <p>
+            Partner with us or support our programs to drive lasting impact.
+        </p>
+        <a href="{% url 'contact' %}" class="btn btn-primary">Get in Touch</a>
+    </div>
+</section>
+
+{% endblock %}

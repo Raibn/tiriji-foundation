@@ -1,38 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <h1>Welcome to TIRIJI</h1>
-        <nav>
-            <ul>
-                <li><a href="#about">About</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="about">
-            <h2>About Us</h2>
-            <p>Information about TIRIJI.</p>
-        </section>
-        <section id="services">
-            <h2>Our Services</h2>
-            <p>Details about the services offered.</p>
-        </section>
-        <section id="contact">
-            <h2>Contact Us</h2>
-            <p>Contact information.</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2023 TIRIJI. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Inspiring Action for Regeneration</h1>
+        <p>
+            We are committed to holistic community transformation through leadership,
+            gender equity, regenerative culture, and youth empowerment.
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'donate' %}" class="btn btn-primary">Donate</a>
+            <a href="{% url 'volunteer' %}" class="btn btn-secondary">Volunteer</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ABOUT PREVIEW -->
+<section class="about-preview container">
+    <h2>Who We Are</h2>
+    <p>
+        Tiriji Foundation is a regenerative movement rooted in Ubuntu principles,
+        empowering individuals, families, and communities to thrive through
+        leadership, reconciliation, and sustainable development.
+    </p>
+    <a href="{% url 'about' %}" class="text-link">Learn More →</a>
+</section>
+
+
+<!-- PROGRAMS SECTION -->
+<section class="programs-section container">
+    <h2>Our Programs</h2>
+
+    <div class="program-grid">
+        {% for program in programs %}
+        <div class="program-card">
+            {% if program.image %}
+                <img src="{{ program.image.url }}" alt="{{ program.title }}">
+            {% endif %}
+            <h3>{{ program.title }}</h3>
+            <p>{{ program.description|truncatewords:20 }}</p>
+            <a href="{% url 'program_detail' program.id %}" class="text-link">
+                Read More →
+            </a>
+        </div>
+        {% empty %}
+        <p>No programs available at the moment.</p>
+        {% endfor %}
+    </div>
+
+    <div class="center-btn">
+        <a href="{% url 'programs' %}" class="btn btn-outline">View All Programs</a>
+    </div>
+</section>
+
+
+<!-- IMPACT SECTION -->
+<section class="impact-section">
+    <div class="container impact-grid">
+        <div>
+            <h3>Community Impact</h3>
+            <p>
+                From children’s homes to regenerative farming initiatives,
+                our programs are building lasting transformation.
+            </p>
+        </div>
+        <div>
+            <h3>Get Involved</h3>
+            <p>
+                Join us as a donor, volunteer, or partner and help inspire action
+                for a thriving and regenerative future.
+            </p>
+            <a href="{% url 'volunteer_signup' %}" class="btn btn-primary">
+                Sign Up
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- CALL TO ACTION -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Support Our Mission</h2>
+        <p>Your contribution helps create sustainable impact.</p>
+        <a href="{% url 'donate' %}" class="btn btn-primary">Donate Today</a>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,18 +1,99 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>{% block title %}Tiriji Vocation Center{% endblock %}</title>
+
+    <!-- Meta -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Tiriji Foundation{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/about/">About</a>
-        <a href="/contact/">Contact</a>
-    </nav>
 
-    {% block content %}{% endblock %}
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">Tiriji</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'about' %}">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'children' %}">Children</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'women' %}">Women</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'programs' %}">Programs</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'events' %}">Events</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'news' %}">News</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'resources' %}">Resources</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== FLASH MESSAGES ===== -->
+<div class="container mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="py-4">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-dark text-light text-center py-3 mt-5">
+    <div class="container">
+        <p class="mb-0">
+            &copy; {% now "Y" %} Tiriji Vocation Center. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block extra_js %}{% endblock %}
+
 </body>
 </html>

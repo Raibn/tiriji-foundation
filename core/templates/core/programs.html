@@ -1,42 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiriji Foundation Programs</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <h1>Tiriji Foundation Programs</h1>
-        <nav>
-            <ul>
-                <li><a href="#program1">Program 1</a></li>
-                <li><a href="#program2">Program 2</a></li>
-                <li><a href="#program3">Program 3</a></li>
-            </ul>
-        </nav>
-    </header>
-    
-    <main>
-        <section id="program1">
-            <h2>Program 1 Title</h2>
-            <p>Description of Program 1.</p>
-        </section>
-        
-        <section id="program2">
-            <h2>Program 2 Title</h2>
-            <p>Description of Program 2.</p>
-        </section>
-        
-        <section id="program3">
-            <h2>Program 3 Title</h2>
-            <p>Description of Program 3.</p>
-        </section>
-    </main>
-    
-    <footer>
-        <p>&copy; 2023 Tiriji Foundation. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="page-hero">
+    <div class="container">
+        <h1>Our Programs</h1>
+        <p>
+            Explore our diverse initiatives empowering communities, youth, and the environment.
+        </p>
+    </div>
+</section>
+
+<!-- PROGRAMS GRID -->
+<section class="container programs-section">
+    <h2 class="section-title">All Programs</h2>
+
+    <div class="program-grid">
+        {% for program in programs %}
+        <div class="program-card">
+            {% if program.image %}
+                <img src="{{ program.image.url }}" alt="{{ program.title }}">
+            {% endif %}
+            <h3>{{ program.title }}</h3>
+            <p>{{ program.description|truncatewords:25 }}</p>
+            <a href="{% url 'program_detail' program.id %}" class="text-link">
+                Read More →
+            </a>
+        </div>
+        {% empty %}
+        <p>No programs available at the moment.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Want to Get Involved?</h2>
+        <p>Support our programs or volunteer to make a lasting impact.</p>
+        <a href="{% url 'donate' %}" class="btn btn-primary">Donate</a>
+        <a href="{% url 'volunteer_signup' %}" class="btn btn-secondary">Volunteer</a>
+    </div>
+</section>
+
+{% endblock %}
