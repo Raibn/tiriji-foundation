@@ -18,14 +18,14 @@
     <h2 class="section-title">All Programs</h2>
 
     <div class="program-grid">
-        {% for program in programs %}
+        {% for program in program %}
         <div class="program-card">
             {% if program.image %}
                 <img src="{{ program.image.url }}" alt="{{ program.title }}">
             {% endif %}
             <h3>{{ program.title }}</h3>
-            <p>{{ program.description|truncatewords:25 }}</p>
-            <a href="{% url 'program_detail' program.id %}" class="text-link">
+            <p>{{ program.program_description|truncatewords:25 }}</p>
+            <a href="{% url 'program_detail' program.program_id %}" class="text-link">
                 Read More →
             </a>
         </div>

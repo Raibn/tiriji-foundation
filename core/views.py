@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from .models import Program, Volunteer
+from .models import program, volunteer
 
 def home(request):
-    programs = Program.objects.all()
+    programs = program.objects.all()
     return render(request, 'core/home.html', {'programs': programs})
 
 def about(request):
@@ -22,11 +22,11 @@ def volunteer(request):
     return render(request, 'core/volunteer.html')
 
 def programs(request):
-    programs = Program.objects.all()
+    programs = program.objects.all()
     return render(request, 'core/programs.html', {'programs': programs})
 
 def program_detail(request, program_id):
-    program = Program.objects.get(id=program_id)
+    program = program.objects.get(id=program_id)
     return render(request, 'core/program_detail.html', {'program': program})
 
 def volunteer_signup(request):
@@ -36,7 +36,7 @@ def volunteer_signup(request):
         message = request.POST.get('message')
 
         # Save volunteer information to the database
-        Volunteer.objects.create(name=name, email=email, message=message)
+        volunteer.objects.create(name=name, email=email, message=message)
 
         return render(request, 'core/volunteer_success.html', {'name': name})
     return render(request, 'core/volunteer_signup.html')

@@ -24,6 +24,7 @@ class volunteer(models.Model):
     emergency_contact_phone = models.CharField(max_length=20)
     program_id = models.ForeignKey(program, on_delete=models.CASCADE, null=True, blank=True, related_name='volunteers')
 
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} registered for {self.program_id.title} program that starts on {self.start_date} and ends on {self.end_date}"
 
@@ -115,7 +116,7 @@ class gallery(models.Model):
     image_url = models.URLField(max_length=250, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     program_id = models.ForeignKey(program, on_delete=models.CASCADE, null=True, blank=True, related_name='program_gallery')
-    event_id = models.ForeignKey(event, on_delete=models.CASCADE, null=True, blank=True, related_name='event_gallery')
+    event_id = models.ForeignKey(events, on_delete=models.CASCADE, null=True, blank=True, related_name='event_gallery')
 
     def __str__(self):
         if self.program_id and self.event_id:
