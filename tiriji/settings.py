@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'django_cleanup.apps.CleanupConfig',
-    'storages',    
+    'storages', 
+    'rest_framework'   
     
 ]
 
