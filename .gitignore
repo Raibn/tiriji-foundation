@@ -1,5 +1,7 @@
 # Python
-__pycache__/
+/core/__pycache__/
+/tiriji/__pycache__/
+__pycache__*
 *.pyc
 *.pyo
 *.pyd
