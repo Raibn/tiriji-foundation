@@ -26,8 +26,8 @@ def programs(request):
     return render(request, 'core/programs.html', {'programs': programs})
 
 def program_detail(request, program_id):
-    program = program.objects.get(id=program_id)
-    return render(request, 'core/program_detail.html', {'program': program})
+    program_detail = program.objects.get(program_id=program_id)
+    return render(request, 'core/program_detail.html', {'program': program_detail})
 
 def volunteer_signup(request):
     if request.method == 'POST':
