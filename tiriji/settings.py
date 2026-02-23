@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import dj_database_url
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -91,11 +95,15 @@ WSGI_APPLICATION = 'tiriji.wsgi.application'
 # }
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://tiriji_database_user:923vIckEUAt4BbeqXmgETAHxq9rs0ZwX@dpg-d6bdjc14tr6s73dsselg-a.oregon-postgres.render.com/tiriji_database',
-        conn_max_age=600,
+    # 'default': dj_database_url.config(
+    #     default='postgresql://tiriji_database_user:923vIckEUAt4BbeqXmgETAHxq9rs0ZwX@dpg-d6bdjc14tr6s73dsselg-a.oregon-postgres.render.com/tiriji_database',
+    #     conn_max_age=600,
 
-    )
+    # )
+    'default': dj_database_url.config(
+        default = os.getenv('DATABASE_URL'),
+        conn_max_age=600,   
+        )
 }   
 
 
