@@ -17,19 +17,20 @@ window.addEventListener('scroll', () => {
     }
 });
 
-const hero = document.querySelector('.hero');
+const hero = document.querySelector('.hero1');
 
-const observer = new IntersectionObserver(
-    (entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                header.classList.add('hidden-nav');
-            } else {
-                header.classList.remove('hidden-nav');
-            }
-        });
-    },
-    { threshold: 0.1 }
-);
-
-observer.observe(hero);
+if (hero) {
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    header.classList.add('hidden-nav');
+                } else {
+                    header.classList.remove('hidden-nav');
+                }
+            });
+        },
+        { threshold: 0.1 }
+    );
+    observer.observe(hero);
+}

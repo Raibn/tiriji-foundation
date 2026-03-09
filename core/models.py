@@ -75,38 +75,38 @@ class resources(models.Model):
         return f"{self.title} resource related to {self.program_id.title} program"
 
 
-class employees(models.Model):
-    first_name = models.CharField(max_length=50, null=False, blank=False)
-    last_name = models.CharField(max_length=50, null=False, blank=False)
-    email = models.EmailField(unique=True, primary_key=True)
-    role = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=20)
-    id_pass_no = models.CharField(max_length=50, verbose_name="ID/Passport No")
-    starting_date = models.DateField(auto_now_add=True)
-    residence = models.CharField(max_length=100)
-    emergency_contact_name = models.CharField(max_length=100)
-    emergency_contact_phone = models.CharField(max_length=20)
-    bio = models.TextField()
-    profile_image_url = models.URLField(max_length=250, null=True, blank=True)
+#class employees(models.Model):
+#    first_name = models.CharField(max_length=50, null=False, blank=False)
+#    last_name = models.CharField(max_length=50, null=False, blank=False)
+#    email = models.EmailField(unique=True, primary_key=True)
+#    role = models.CharField(max_length=100)
+#    phone_number = models.CharField(max_length=20)
+#    id_pass_no = models.CharField(max_length=50, verbose_name="ID/Passport No")
+#    starting_date = models.DateField(auto_now_add=True)
+#    residence = models.CharField(max_length=100)
+#    emergency_contact_name = models.CharField(max_length=100)
+#    emergency_contact_phone = models.CharField(max_length=20)
+#    bio = models.TextField()
+#    profile_image_url = models.URLField(max_length=250, null=True, blank=True)
+#
+#    def __str__(self):
+#        return f"{self.first_name} {self.last_name} - {self.role}"
 
-    def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.role}"
 
-
-class patners(models.Model):
-    name = models.CharField(max_length=100, null=False, blank=False)
-    patners_description = models.TextField()
-    profile_logo_url = models.URLField(max_length=250, null=True, blank=True)
-    website_url = models.URLField(max_length=250, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    assigned_employee = models.ForeignKey(employees, on_delete=models.SET_NULL, null=True, blank=True, related_name='patners')  
-    program_id = models.ForeignKey(program, on_delete=models.CASCADE, null=True, blank=True, related_name='patners')
-
-    def __str__(self):
-        if self.assigned_employee:
-            return f"{self.name} patner related to {self.program_id.title} program and assigned to {self.assigned_employee.first_name} {self.assigned_employee.last_name}" 
-        else:
-            return f"{self.name} patner related to {self.program_id.title} program"
+#class patners(models.Model):
+#    name = models.CharField(max_length=100, null=False, blank=False)
+#    patners_description = models.TextField()
+#    profile_logo_url = models.URLField(max_length=250, null=True, blank=True)
+#    website_url = models.URLField(max_length=250, null=True, blank=True)
+#    created_at = models.DateTimeField(auto_now_add=True)
+#    assigned_employee = models.ForeignKey(employees, on_delete=models.SET_NULL, null=True, blank=True, related_name='patners')  
+#    program_id = models.ForeignKey(program, on_delete=models.CASCADE, null=True, blank=True, related_name='patners')
+#
+#    def __str__(self):
+#        if self.assigned_employee:
+#            return f"{self.name} patner related to {self.program_id.title} program and assigned to {self.assigned_employee.first_name} {self.assigned_employee.last_name}" 
+#        else:
+#            return f"{self.name} patner related to {self.program_id.title} program"
 
 
 class gallery(models.Model):

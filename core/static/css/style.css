@@ -83,22 +83,52 @@ a {
          NAVIGATION
 ================================*/
 
-.site-header {
+/*.site-header {
     position: fixed;
     top: 0;
     width: 100%;
     background: var(--dark);
     transition: all 0.3s ease;
     z-index: 1000;
+}*/
+/*===== glass effect ====*/
+.site-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    scroll-behavior: smooth;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
 }
 
+
 /* Shrinked state */
+.site-header.shrink {
+    background: rgba(90, 202, 135, 0.489); /* your --dark */
+    /*backdrop-filter: none;*/
+    border-bottom: none;
+}
+
+
+@supports not (backdrop-filter: blur(10px)) {
+    .site-header {
+        background: rgba(44, 62, 80, 0.95);
+    }
+}
+
 .site-header.shrink .nav-wrapper {
-    padding: 10px 0;
+    padding: 3px 0;
 }
 
 .site-header.shrink .logo {
-    height: 35px;
+    opacity: 0;
+    width: 0;
+    margin: 0;
 }
 
 .site-header.shrink .brand-name {
@@ -112,7 +142,7 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
+    padding: 10px 0;
     transition: all 0.3s ease;
 }
 
@@ -184,16 +214,20 @@ a {
         display: none;
     }
     .nav-menu {
-        position: static;
+        position: relative;
         display: block;
         width: auto;
+        background: none;
+        right: 0;
     }
     .nav-menu.active {
         display: block !important;
     }   
     .nav-list {
+        display: flex;
         flex-direction: row;
-        gap: var(--space-lg);
+        gap: var(--space-sm);
+        margin-left: auto;
     }
     .nav-list li {
         border: none;
@@ -423,12 +457,35 @@ body {
     margin: 0 auto;
 }
 
-.hero {
+/*.hero {
     background: var(--primary);
     color: var(--white);
     text-align: center;
     padding: 100px 20px;
+}*/
+
+.hero {
+    position: relative;
+    height: 100vh;
+    background: url('../images/hero.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(238, 8, 161, 0.5);
+}
+
+.hero-content {
+    position: relative;
+    color:var(--white);
+    text-align: center;
+    z-index: 2;
+}
+
 
 .hero h1 {
     font-size: 2.8rem;
