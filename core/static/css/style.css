@@ -83,14 +83,7 @@ a {
          NAVIGATION
 ================================*/
 
-/*.site-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: var(--dark);
-    transition: all 0.3s ease;
-    z-index: 1000;
-}*/
+
 /*===== glass effect ====*/
 .site-header {
     position: fixed;
@@ -257,10 +250,11 @@ a {
 }
 
 .card img {
-    width: 100%;
-    height: 180px;
+    width: auto;
+    height: 150px;
     object-fit: cover;
     border-radius: 6px;
+
 }
 
 .card h3,
@@ -464,19 +458,35 @@ body {
     padding: 100px 20px;
 }*/
 
+/*============HERO SECTION================*/
 .hero {
     position: relative;
-    height: 100vh;
-    background: url('../images/hero.jpg') center/cover no-repeat;
+    height: 60vh;
+    overflow: hidden;
+    /*background: url('../images/hero.png') right/cover no-repeat;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: left;
+    padding: 0 20px;}*/
+}
+
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.hero-slide.active {
+    opacity: 1;
 }
 
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(238, 8, 161, 0.5);
+    background: rgb(9, 93, 44,0.55);
 }
 
 .hero-content {
@@ -485,6 +495,12 @@ body {
     text-align: center;
     z-index: 2;
 }
+.slide-1 { background-image: url('../images/hero-children.jpg'); }
+.slide-2 { background-image: url('../images/hero-women.jpg'); }
+.slide-3 { background-image: url('../images/program-kenger.jpg'); }
+.slide-4 { background-image: url('../images/program-ngl.jpg');}
+.slide-5 { background-image: url('../images/hero-women-2.jpg');}
+
 
 
 .hero h1 {
@@ -540,6 +556,12 @@ body {
 }
 
 /* ===== GRID UTILITIES ===== */
+.grid-1 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 0.8fr));
+    gap: 20px;
+    align-items: center;
+}
 .grid-2 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -784,27 +806,33 @@ body {
 }
 
 /* SINGLE PARTNER */
-.partner-logo {
-    width: 200px;
-    height: 200px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto 20px auto;
+
+.partner{
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
 }
 
-.partner-detail .suggested-partners {
-    margin-top: 60px;
-}
-.partner-detail .suggested-partners h3 {
-    margin-bottom: 30px;
-}
-.partner-detail .suggested-partners .partner-logo {
-    width: 200px;
-    height: 200px;
-    object-fit: contain;
+.partner-logo {
+    width: 135px;
+    height: 135px;
+    object-fit: fill;
     display: block;
     margin: 0 auto 20px auto;
+    border-radius: 8px;
 }
+
+
+.suggested-partners {
+    margin-top: 60px;
+}
+.partner h3 {
+    margin-bottom: 30px;
+}
+
+
 /* ===== VOCATION HERO ===== */
 .vocation-hero {
     background: linear-gradient(to right, #f5f5f5, #eaeaea);

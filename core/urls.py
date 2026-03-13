@@ -26,7 +26,7 @@ urlpatterns = [
     path('careers/<int:career_id>/', views.career_detail, name='career_detail'),
     path('donate/success/', views.donate_success, name='donate_success'),
     path('feedback/', views.feedback, name='feedback'),
-    path('feedback/success/', views.feedback_success, name='feedback_success'), 
+    #path('feedback/success/', views.feedback_success, name='feedback_success'), 
 
     
     

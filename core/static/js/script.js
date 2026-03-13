@@ -17,7 +17,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-const hero = document.querySelector('.hero1');
+const hero = document.querySelector('.hero');
 
 if (hero) {
     const observer = new IntersectionObserver(
@@ -34,3 +34,20 @@ if (hero) {
     );
     observer.observe(hero);
 }
+//Additional JS for hero slider
+
+const slides = document.querySelectorAll('.hero-slide');
+let currentSlide = 0;
+
+function showSlide(index) {
+    slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+    });
+}
+
+if (slides.length > 0) {
+    setInterval(() => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }, 5000);
+} 

@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render , redirect
+from django.contrib import messages
 from .models import program, volunteer
 
 def home(request):
@@ -84,7 +85,18 @@ def sitemap(request):
     return render(request, 'core/sitemap.html')
 
 def feedback(request):
-    return render(request, 'core/feedback.html')
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        message = request.POST.get("message")
+
+        # process message (save/email etc)
+
+        messages.success(request, "Your message was sent successfully!")
+        return redirect("feedback")
+
+    return render(request, "core/feedback.html")
+
 
 def newsletter(request):
     return render(request, 'core/newsletter.html')
@@ -134,6 +146,4 @@ def blog_detail(request, blog_id):
     # Placeholder for blog detail view
     return render(request, 'core/blog_detail.html', {'blog_id': blog_id})
 
-def feedback_success(request):
-    return render(request, 'core/feedback_success.html')
  
