@@ -32,6 +32,7 @@ if not SECRET_KEY:
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
+<<<<<<< HEAD
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1','0.0.0.0','tirijifoundation.org','www.tirijifoundation.org','tirijifoundation.onrender.com']
@@ -46,10 +47,25 @@ if configured_csrf_origins:
     CSRF_TRUSTED_ORIGINS.extend(
         origin.strip() for origin in configured_csrf_origins.split(',') if origin.strip()
     )
+=======
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
+
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
+
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+if not DEBUG:
+    for host in ALLOWED_HOSTS:
+        if host in {'localhost', '127.0.0.1', '0.0.0.0'}:
+            continue
+        origin = f'https://{host.lstrip(".")}'
+        if origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(origin)
+>>>>>>> 8d1ad20 (Production-ready platform overhaul — Phase 0, Phase 1, FAQ, payment bridge)
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_HSTS_SECONDS = 31536000
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -187,11 +203,62 @@ LOGIN_REDIRECT_URL = 'admin_portal'
 LOGOUT_REDIRECT_URL = 'home'
 
 # Session settings
-SESSION_COOKIE_AGE = 600  # 10 minutes in seconds
+SESSION_COOKIE_AGE = 3600  # 60 minutes idle timeout
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True  # resets the idle clock on each request
+
+# Email
+# TODO: set EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend in production
+#       and populate EMAIL_HOST / EMAIL_HOST_USER / EMAIL_HOST_PASSWORD via env vars.
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Tiriji Foundation <noreply@tirijifoundation.com>')
 
 # DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+# Cache — Redis in production, local memory fallback for dev
+_REDIS_URL = os.getenv('REDIS_URL')
+if _REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _REDIS_URL,
+        }
+    }
+    RATELIMIT_USE_CACHE = 'default'
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 #for production
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# ─── Payment gateways ─────────────────────────────────────────────────────────
+# TODO: Set all of these in your production environment (Koyeb secrets / .env).
+# Leave them empty in dev — the service stubs will raise a clear GatewayError.
+
+# Stripe  (https://dashboard.stripe.com/apikeys)
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')   # whsec_... from Stripe CLI / dashboard
+
+# PayPal  (https://developer.paypal.com/dashboard/applications)
+PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', '')
+PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', '')
+PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')                # 'sandbox' → 'live' in production
+PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID', '')
+
+# M-Pesa / Safaricom Daraja  (https://developer.safaricom.co.ke)
+MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY', '')
+MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET', '')
+MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE', '')               # Paybill or till number
+MPESA_PASSKEY = os.getenv('MPESA_PASSKEY', '')
+MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL', '')         # https://yourdomain.com/webhooks/mpesa/

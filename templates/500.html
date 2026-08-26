@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Server Error — Tiriji Foundation{% endblock %}
+
+{% block content %}
+<section class="page-hero programs-hero">
+    <div class="container page-hero-grid">
+        <div class="reveal-on-scroll">
+            <h1>Something Went Wrong</h1>
+            <p>We've encountered an unexpected error. Our team has been notified. Please try again in a moment.</p>
+            <div class="hero-actions" style="margin-top:2rem;">
+                <a href="/" class="btn btn-primary">Go Home</a>
+                <a href="/contact/" class="btn btn-secondary">Contact Us</a>
+            </div>
+        </div>
+        <div class="hero-proof glass-panel reveal-on-scroll">
+            <strong>500</strong>
+            <span>Server error</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

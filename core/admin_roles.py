@@ -2,18 +2,21 @@ from django.contrib.auth.models import Group
 
 ADMIN_ROLE_CHOICES = [
     ('sys_admin', 'System Admin'),
-    ('manager', 'Manager'),
-    ('secretary', 'Secretary')
+    ('director', 'Director'),
+    ('admin', 'Admin'),
+    ('secretary', 'Secretary'),
 ]
 
 ADMIN_GROUP_NAMES = [
-    'admin',
+    'sys_admin',
     'director',
+    'admin',
     'secretary',
-    'sys_admin'
 ]
 
-FULL_ACCESS_GROUPS = {'admin', 'director', 'secretary', 'sys_admin', 'manager'}
+# Only sys_admin (and superusers) bypass role checks — all other groups are
+# restricted to the specific endpoints their role is allowed on.
+FULL_ACCESS_GROUPS = {'sys_admin'}
 
 
 def is_admin_identity(user):
@@ -45,7 +48,8 @@ def assign_admin_role(user, role_name):
     ensure_admin_groups()
     user.groups.remove(*Group.objects.filter(name__in=ADMIN_GROUP_NAMES))
     if role_name:
-        user.groups.add(Group.objects.get(name=role_name))
+        group, _ = Group.objects.get_or_create(name=role_name)
+        user.groups.add(group)
 
 
 def get_admin_role_label(user):

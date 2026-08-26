@@ -47,7 +47,7 @@
         <div class="donation-form-card reveal-on-scroll">
             <p class="section-label">Message</p>
             <h2>Send us a note</h2>
-            <form action="{% url 'feedback' %}" method="POST" class="premium-form">
+            <form action="{% url 'contact' %}" method="POST" class="premium-form">
                 {% csrf_token %}
                 <div class="grid grid-2">
                     <div class="form-group">

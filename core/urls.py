@@ -33,7 +33,17 @@ urlpatterns = [
     path('blog/<uuid:blog_id>/', views.blog_detail, name='blog_detail'),
     path('donate/success/', views.donate_success, name='donate_success'),
     path('donate/cancel/', views.donate_cancel, name='donate_cancel'),
+
+    # Payment gateway webhooks — server-to-server, no CSRF, signature-verified
+    path('webhooks/stripe/', views.stripe_webhook, name='stripe_webhook'),
+    path('webhooks/paypal/', views.paypal_webhook, name='paypal_webhook'),
+    path('webhooks/mpesa/', views.mpesa_callback, name='mpesa_callback'),
     path('feedback/', views.feedback, name='feedback'),
+    path('careers/', views.careers, name='careers'),
+    path('careers/<int:career_id>/', views.career_detail, name='career_detail'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('terms/', views.terms_of_service, name='terms_of_service'),
+    path('newsletter/', views.newsletter, name='newsletter'),
 
     # auth
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),

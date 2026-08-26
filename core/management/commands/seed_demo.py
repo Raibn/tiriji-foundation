@@ -27,6 +27,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         today = timezone.localdate()
 
+        # Standard IPI volunteer fees (USD, shared room). All programs use the
+        # same published rate schedule: longer stays are cheaper per week.
+        # Private room adds $50/week on top of these figures.
+        IPI_FEES = {
+            'week_fee':       Decimal('800.00'),   # 1 week
+            'two_week_fee':   Decimal('1200.00'),  # 2 weeks
+            'four_week_fee':  Decimal('1600.00'),  # ~1 month
+            'eight_week_fee': Decimal('2800.00'),  # ~2 months
+            'extra_week_fee': Decimal('300.00'),   # per week beyond 8 (→ $4,000 at 12 wks)
+        }
+
         children_program, _ = program.objects.update_or_create(
             title="Kithoka Amani Children's Home",
             defaults={
@@ -35,10 +46,7 @@ class Command(BaseCommand):
                     "The program combines daily care, education support, emotional wellbeing, mentorship, and family/community reintegration where appropriate."
                 ),
                 'image_url': '/static/images/IMG-20260522-WA0018.jpg',
-                'two_week_fee': Decimal('240.00'),
-                'four_week_fee': Decimal('440.00'),
-                'eight_week_fee': Decimal('800.00'),
-                'extra_week_fee': Decimal('90.00'),
+                **IPI_FEES,
             },
         )
         women_program, _ = program.objects.update_or_create(
@@ -49,10 +57,7 @@ class Command(BaseCommand):
                     "The program supports women groups, seed funding, weaving skills, local enterprise, and economic independence."
                 ),
                 'image_url': '/static/images/hero-women-2.jpg',
-                'two_week_fee': Decimal('280.00'),
-                'four_week_fee': Decimal('520.00'),
-                'eight_week_fee': Decimal('960.00'),
-                'extra_week_fee': Decimal('105.00'),
+                **IPI_FEES,
             },
         )
         community_program, _ = program.objects.update_or_create(
@@ -63,10 +68,7 @@ class Command(BaseCommand):
                     "Field work includes food systems, ecology, community learning, and practical service."
                 ),
                 'image_url': '/static/images/IMG-20260522-WA0016.jpg',
-                'two_week_fee': Decimal('200.00'),
-                'four_week_fee': Decimal('380.00'),
-                'eight_week_fee': Decimal('700.00'),
-                'extra_week_fee': Decimal('80.00'),
+                **IPI_FEES,
             },
         )
         ngl_program, _ = program.objects.update_or_create(
@@ -77,10 +79,7 @@ class Command(BaseCommand):
                     "cross-cultural learning, and community project implementation rooted in local wisdom."
                 ),
                 'image_url': '/static/images/IMG-20260522-WA0037.jpg',
-                'two_week_fee': Decimal('300.00'),
-                'four_week_fee': Decimal('580.00'),
-                'eight_week_fee': Decimal('1080.00'),
-                'extra_week_fee': Decimal('120.00'),
+                **IPI_FEES,
             },
         )
         vocational_program, _ = program.objects.update_or_create(
@@ -91,10 +90,7 @@ class Command(BaseCommand):
                     "catering and hospitality, and fashion and design."
                 ),
                 'image_url': '/static/images/program-kenger.jpg',
-                'two_week_fee': Decimal('260.00'),
-                'four_week_fee': Decimal('500.00'),
-                'eight_week_fee': Decimal('920.00'),
-                'extra_week_fee': Decimal('100.00'),
+                **IPI_FEES,
             },
         )
         wellness_program, _ = program.objects.update_or_create(
@@ -105,10 +101,7 @@ class Command(BaseCommand):
                     "and restorative practices that help people and communities thrive."
                 ),
                 'image_url': '/static/images/hero-women.jpg',
-                'two_week_fee': Decimal('220.00'),
-                'four_week_fee': Decimal('420.00'),
-                'eight_week_fee': Decimal('780.00'),
-                'extra_week_fee': Decimal('85.00'),
+                **IPI_FEES,
             },
         )
         guest_program, _ = program.objects.update_or_create(
@@ -119,10 +112,7 @@ class Command(BaseCommand):
                     "meet community members, and contribute to the wider mission."
                 ),
                 'image_url': '/static/images/IMG-20260522-WA0016.jpg',
-                'two_week_fee': Decimal('360.00'),
-                'four_week_fee': Decimal('680.00'),
-                'eight_week_fee': Decimal('1260.00'),
-                'extra_week_fee': Decimal('140.00'),
+                **IPI_FEES,
             },
         )
 
@@ -339,6 +329,18 @@ class Command(BaseCommand):
                     'assigned_employee': employee,
                     'program_id': community_program,
                 },
+            )
+
+        # Homepage impact counters (data-count values must be plain integers)
+        for order, (label, value, desc) in enumerate([
+            ('Children supported since 2002', '2000', 'Children cared for, educated and supported through KACH and partner programs.'),
+            ('Women trained and empowered',   '200',  'Women who have completed enterprise, skills, and leadership training.'),
+            ('Active programs',               '6',    'Core program pathways currently operating at Tiriji and IPI.'),
+            ('Partner organisations',         '6',    'International and local partners supporting Tiriji Foundation programs.'),
+        ], start=1):
+            ImpactMetric.objects.update_or_create(
+                page='home', label=label,
+                defaults={'value': value, 'description': desc, 'display_order': order, 'is_active': True},
             )
 
         ImpactMetric.objects.update_or_create(

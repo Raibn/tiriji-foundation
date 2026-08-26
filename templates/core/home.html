@@ -36,22 +36,31 @@
 
 <section class="impact-strip" id="impact" aria-label="Impact metrics">
     <div class="container impact-grid">
-        <div class="impact-stat reveal-on-scroll">
-            <strong data-count="500">0</strong>
-            <span>Children supported</span>
-        </div>
-        <div class="impact-stat reveal-on-scroll">
-            <strong data-count="120">0</strong>
-            <span>Women-led renewal</span>
-        </div>
-        <div class="impact-stat reveal-on-scroll">
-            <strong data-count="20">0</strong>
-            <span>Community programs</span>
-        </div>
-        <div class="impact-stat reveal-on-scroll">
-            <strong data-count="10">0</strong>
-            <span>Partner pathways</span>
-        </div>
+        {% if home_metrics %}
+            {% for metric in home_metrics %}
+            <div class="impact-stat reveal-on-scroll">
+                <strong data-count="{{ metric.value }}">0</strong>
+                <span>{{ metric.label }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="impact-stat reveal-on-scroll">
+                <strong data-count="2000">0</strong>
+                <span>Children supported since 2002</span>
+            </div>
+            <div class="impact-stat reveal-on-scroll">
+                <strong data-count="200">0</strong>
+                <span>Women trained and empowered</span>
+            </div>
+            <div class="impact-stat reveal-on-scroll">
+                <strong data-count="6">0</strong>
+                <span>Active programs</span>
+            </div>
+            <div class="impact-stat reveal-on-scroll">
+                <strong data-count="6">0</strong>
+                <span>Partner organisations</span>
+            </div>
+        {% endif %}
     </div>
 </section>
 

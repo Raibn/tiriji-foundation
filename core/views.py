@@ -1,4 +1,8 @@
-from django.http import Http404, JsonResponse
+import json
+import logging
+
+from django.http import Http404, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -15,6 +19,7 @@ from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_http_methods
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.core.paginator import Paginator
 
 import cloudinary
 import time
@@ -43,6 +48,10 @@ CAREER_OPENINGS = [
 ]
 
 
+def _paginate(request, qs, per_page=12):
+    return Paginator(qs, per_page).get_page(request.GET.get('page', 1))
+
+
 def user_in_group(user):
     return user_has_admin_access(user)
 
@@ -65,14 +74,23 @@ def role_required(*allowed_groups):
 
 def home(request):
     programs = program.objects.all()
-    return render(request, 'core/home.html', {'programs': programs})
+    home_metrics = ImpactMetric.objects.filter(page='home', is_active=True).order_by('display_order')
+    return render(request, 'core/home.html', {'programs': programs, 'home_metrics': home_metrics})
 
 def about(request):
     return render(request, 'core/about.html')
 
 @ratelimit(key='ip', method='POST', rate='5/h', block=True)
+@require_http_methods(["GET", "POST"])
 def contact(request):
-    return render(request, 'core/contact.html')
+    if request.method == "POST":
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your message was received. We'll be in touch soon.")
+            return redirect("contact")
+        return render(request, "core/contact.html", {"form": form})
+    return render(request, 'core/contact.html', {"form": FeedbackForm()})
 
 def impact_page_context(page):
     return {
@@ -228,20 +246,85 @@ def donate_success(request):
 def donate_cancel(request):
     return render(request, 'core/donate_cancel.html')
 
+
+# ─── Payment gateway webhooks ─────────────────────────────────────────────────
+# csrf_exempt is required — webhooks are server-to-server POST calls that carry
+# their own signature-based authentication instead of Django's CSRF token.
+# Signature verification inside each handler guards against spoofed requests.
+
+_payment_logger = logging.getLogger('tiriji.payments')
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def stripe_webhook(request):
+    """
+    Stripe calls this endpoint after a successful checkout.session.completed event.
+    Set STRIPE_WEBHOOK_SECRET in environment and wire up a live Stripe endpoint
+    pointing to https://yourdomain.com/webhooks/stripe/ once ready.
+    """
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE', '')
+    try:
+        handled = PaymentService.handle_stripe_webhook(request.body, sig_header)
+        status = 'handled' if handled else 'ignored'
+        return HttpResponse(status=200, content=status)
+    except Exception as exc:
+        _payment_logger.error("Stripe webhook error: %s", exc)
+        return HttpResponse(status=400, content=str(exc))
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def paypal_webhook(request):
+    """
+    PayPal calls this endpoint for PAYMENT.CAPTURE.COMPLETED and related events.
+    Set PAYPAL_WEBHOOK_ID in environment and register this URL in the PayPal
+    developer portal once ready.
+    """
+    try:
+        handled = PaymentService.handle_paypal_webhook(request.body, request.META)
+        status = 'handled' if handled else 'ignored'
+        return HttpResponse(status=200, content=status)
+    except Exception as exc:
+        _payment_logger.error("PayPal webhook error: %s", exc)
+        return HttpResponse(status=400, content=str(exc))
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def mpesa_callback(request):
+    """
+    Safaricom Daraja posts the STK Push result here after the customer confirms
+    or declines on their phone. The URL must be publicly accessible over HTTPS.
+    Set MPESA_CALLBACK_URL=https://yourdomain.com/webhooks/mpesa/ in environment.
+    """
+    try:
+        result_data = json.loads(request.body)
+        handled = PaymentService.handle_mpesa_callback(result_data)
+        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+    except json.JSONDecodeError:
+        _payment_logger.error("M-Pesa callback: invalid JSON body")
+        return HttpResponse(status=400)
+    except Exception as exc:
+        _payment_logger.error("M-Pesa callback error: %s", exc)
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': str(exc)}, status=400)
+
 @require_http_methods(["GET"])
 def events(request):
-    event_items = Event.objects.select_related('program_id').all().order_by('event_date')
-    return render(request, 'core/events.html', {'events': event_items})
+    qs = Event.objects.select_related('program_id').all().order_by('event_date')
+    page_obj = _paginate(request, qs, 12)
+    return render(request, 'core/events.html', {'events': page_obj, 'page_obj': page_obj})
 
 @require_http_methods(["GET"])
 def news(request):
-    news_items = News.objects.select_related('program_id', 'event_id').all().order_by('-created_at')
-    return render(request, 'core/news.html', {'news_items': news_items})
+    qs = News.objects.select_related('program_id', 'event_id').all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 12)
+    return render(request, 'core/news.html', {'news_items': page_obj, 'page_obj': page_obj})
 
 @require_http_methods(["GET"])
 def resources(request):
-    resource_items = Resource.objects.select_related('program_id').all().order_by('-created_at')
-    return render(request, 'core/resources.html', {'resource_items': resource_items})
+    qs = Resource.objects.select_related('program_id').all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 12)
+    return render(request, 'core/resources.html', {'resource_items': page_obj, 'page_obj': page_obj})
 
 @require_http_methods(["GET"])
 def faq(request):
@@ -249,8 +332,9 @@ def faq(request):
 
 @require_http_methods(["GET"])
 def gallery(request):
-    gallery_items = Gallery.objects.select_related('program_id', 'event_id').all().order_by('-created_at')
-    return render(request, 'core/gallery.html', {'gallery_items': gallery_items})
+    qs = Gallery.objects.select_related('program_id', 'event_id').all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 16)
+    return render(request, 'core/gallery.html', {'gallery_items': page_obj, 'page_obj': page_obj})
 
 def team(request):
     team_members = Employee.objects.all().order_by('first_name', 'last_name')
@@ -332,8 +416,9 @@ def career_detail(request, career_id):
     return render(request, 'core/career_detail.html', {'career': career})
 
 def blog(request):
-    blog_posts = BlogPost.objects.filter(is_published=True).order_by('-created_at')
-    return render(request, 'core/blog.html', {'blog_posts': blog_posts})
+    qs = BlogPost.objects.filter(is_published=True).order_by('-created_at')
+    page_obj = _paginate(request, qs, 9)
+    return render(request, 'core/blog.html', {'blog_posts': page_obj, 'page_obj': page_obj})
 
 @require_http_methods(["GET"])
 def blog_detail(request, blog_id):
@@ -386,9 +471,9 @@ def admin_form_view(request, form_class, instance=None, section_name='', action_
 
 # user management
 # --------------------------------------------------------------------------------------------------------------------------------
+@login_required
 @role_required('sys_admin')
 @ratelimit(key='user', method=['POST','PATCH','DELETE'], rate='10/h', block=True)
-@login_required
 def admin_users(request):
     users = User.objects.filter(Q(is_staff=True) | Q(groups__name__in=ADMIN_GROUP_NAMES)).distinct().order_by('first_name', 'username')
 
@@ -402,10 +487,10 @@ def admin_users(request):
         ],
     })
 
-@role_required('sys_admin')
-@require_http_methods(["POST"])
-@ratelimit(key='user', method=['POST'], rate='10/h', block=True)
 @login_required
+@role_required('sys_admin')
+@ratelimit(key='user', method=['POST'], rate='10/h', block=True)
+@require_http_methods(["GET","POST"])
 def admin_user_add(request):
     if request.method == 'POST':
         form = AdminUserForm(request.POST)
@@ -432,10 +517,10 @@ def admin_user_add(request):
         'return_url': 'admin_users',
     })
 
-@role_required('sys_admin')
-@require_http_methods(["PATCH","PUT"])
-@ratelimit(key='user', method=ratelimit.ALL, rate='10/h', block=True)
 @login_required
+@role_required('sys_admin')
+@ratelimit(key='user', method=ratelimit.ALL, rate='10/h', block=True)
+@require_http_methods(["GET","POST"])
 def admin_user_edit(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     current_role = user.groups.filter(name__in=ADMIN_GROUP_NAMES).first()
@@ -444,7 +529,7 @@ def admin_user_edit(request, user_id):
         'last_name': user.last_name,
         'username': user.username,
         'email': user.email,
-        'role': current_role.name if current_role else 'manager',
+        'role': current_role.name if current_role else '',
     }
 
     if request.method == 'POST':
@@ -474,12 +559,13 @@ def admin_user_edit(request, user_id):
 
 # donations management 
 # ---------------------------------------------------------------------------------------------------------------
-@role_required('director','secretary')
-@require_http_methods(["GET"])
-@ratelimit(key='user', method=ratelimit.ALL, rate='30/h', block=True)
 @login_required
+@role_required('director','secretary')
+@ratelimit(key='user', method=ratelimit.ALL, rate='30/h', block=True)
+@require_http_methods(["GET"])
 def admin_donations(request):
-    items = Donation.objects.select_related('transaction').all().order_by('-created_at')
+    qs = Donation.objects.select_related('transaction').all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Donations',
         'section_label': 'Donation',
@@ -498,8 +584,9 @@ def admin_donations(request):
                 ],
                 'review_url': reverse('admin_donation_review', args=[item.donation_id]) if item.donation_id else None,
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 @login_required
@@ -541,7 +628,8 @@ def admin_donation_review(request, donation_id):
 # @require_http_methods(["GET","POST","PATCH","PUT"])
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
 def admin_programs(request):
-    items = program.objects.all().order_by('-created_at')
+    qs = program.objects.all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Programs',
         'section_label': 'Program',
@@ -553,32 +641,30 @@ def admin_programs(request):
                 'edit_url': reverse('admin_program_edit', args=[item.program_id]),
                 'delete_url': reverse('admin_program_delete', args=[item.program_id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["POST","PATCH","PUT"])
-@login_required
 def admin_program_add(request):
     return admin_form_view(request, ProgramForm, section_name='Program', action_label='Add', return_url='admin_programs')
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["PATCH","PUT"])
-@login_required
 def admin_program_edit(request, program_id):
     instance = get_object_or_404(program, program_id=program_id)
     return admin_form_view(request, ProgramForm, instance=instance, section_name='Program', action_label='Update', return_url='admin_programs')
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["DELETE"])
-@login_required
 def admin_program_delete(request, program_id):
     instance = get_object_or_404(program, program_id=program_id)
     if request.method == 'POST':
@@ -600,7 +686,8 @@ def admin_program_delete(request, program_id):
 @login_required
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
 def admin_events(request):
-    items = Event.objects.select_related('program_id').all().order_by('-event_date')
+    qs = Event.objects.select_related('program_id').all().order_by('-event_date')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Events',
         'section_label': 'Event',
@@ -612,32 +699,30 @@ def admin_events(request):
                 'edit_url': reverse('admin_event_edit', args=[item.event_id]),
                 'delete_url': reverse('admin_event_delete', args=[item.event_id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["POST"])
-@login_required
 def admin_event_add(request):
     return admin_form_view(request, EventForm, section_name='Event', action_label='Add', return_url='admin_events')
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["PATCH","PUT"])
-@login_required
 def admin_event_edit(request, event_id):
     instance = get_object_or_404(Event, event_id=event_id)
     return admin_form_view(request, EventForm, instance=instance, section_name='Event', action_label='Update', return_url='admin_events')
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["DELETE"])
-@login_required
 def admin_event_delete(request, event_id):
     instance = get_object_or_404(Event, event_id=event_id)
     if request.method == 'POST':
@@ -659,7 +744,8 @@ def admin_event_delete(request, event_id):
 @login_required
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
 def admin_news(request):
-    items = News.objects.select_related('program_id', 'event_id').all().order_by('-created_at')
+    qs = News.objects.select_related('program_id', 'event_id').all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'News',
         'section_label': 'News item',
@@ -671,32 +757,30 @@ def admin_news(request):
                 'edit_url': reverse('admin_news_edit', args=[item.news_id]),
                 'delete_url': reverse('admin_news_delete', args=[item.news_id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["POST"])
-@login_required
 def admin_news_add(request):
     return admin_form_view(request, NewsForm, section_name='News item', action_label='Add', return_url='admin_news')
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["PATCH","PUT"])
-@login_required
 def admin_news_edit(request, news_id):
     instance = get_object_or_404(News, news_id=news_id)
     return admin_form_view(request, NewsForm, instance=instance, section_name='News item', action_label='Update', return_url='admin_news')
 
 
+@login_required
 @role_required('secretary','director')
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
-# @require_http_methods(["DELETE"])
-@login_required
 def admin_news_delete(request, news_id):
     instance = get_object_or_404(News, news_id=news_id)
     if request.method == 'POST':
@@ -710,9 +794,11 @@ def admin_news_delete(request, news_id):
     })
 # -------------------------------------------------------------------------------------------------------------------------------
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_blogs(request):
-    items = BlogPost.objects.all().order_by('-created_at')
+    qs = BlogPost.objects.all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Blog',
         'section_label': 'Blog post',
@@ -729,23 +815,27 @@ def admin_blogs(request):
                 'edit_url': reverse('admin_blog_edit', args=[item.blog_id]),
                 'delete_url': reverse('admin_blog_delete', args=[item.blog_id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_blog_add(request):
     return admin_form_view(request, BlogPostForm, section_name='Blog post', action_label='Add', return_url='admin_blogs')
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_blog_edit(request, blog_id):
     instance = get_object_or_404(BlogPost, blog_id=blog_id)
     return admin_form_view(request, BlogPostForm, instance=instance, section_name='Blog post', action_label='Update', return_url='admin_blogs')
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_blog_delete(request, blog_id):
     instance = get_object_or_404(BlogPost, blog_id=blog_id)
     if request.method == 'POST':
@@ -759,9 +849,11 @@ def admin_blog_delete(request, blog_id):
     })
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_stories(request):
-    items = SuccessStory.objects.all().order_by('-created_at')
+    qs = SuccessStory.objects.all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Stories',
         'section_label': 'Story',
@@ -778,23 +870,27 @@ def admin_stories(request):
                 'edit_url': reverse('admin_story_edit', args=[item.id]),
                 'delete_url': reverse('admin_story_delete', args=[item.id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_story_add(request):
     return admin_form_view(request, SuccessStoryForm, section_name='Story', action_label='Add', return_url='admin_stories')
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_story_edit(request, story_id):
     instance = get_object_or_404(SuccessStory, pk=story_id)
     return admin_form_view(request, SuccessStoryForm, instance=instance, section_name='Story', action_label='Update', return_url='admin_stories')
 
 
-@role_required('content_manager', 'events_resources_manager')
+@login_required
+@role_required('secretary', 'director')
 def admin_story_delete(request, story_id):
     instance = get_object_or_404(SuccessStory, pk=story_id)
     if request.method == 'POST':
@@ -810,7 +906,8 @@ def admin_story_delete(request, story_id):
 
 @role_required('secretary','director')
 def admin_resources(request):
-    items = Resource.objects.select_related('program_id').all().order_by('-created_at')
+    qs = Resource.objects.select_related('program_id').all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Resources',
         'section_label': 'Resource',
@@ -822,8 +919,9 @@ def admin_resources(request):
                 'edit_url': reverse('admin_resource_edit', args=[item.resource_id]),
                 'delete_url': reverse('admin_resource_delete', args=[item.resource_id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 @role_required('secretary','director')
@@ -866,7 +964,8 @@ def admin_resource_delete(request, resource_id):
 @login_required
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
 def admin_volunteers(request):
-    items = Volunteer.objects.all().order_by('-created_at')
+    qs = Volunteer.objects.all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 20)
     return render(request, 'core/admin_list.html', {
         'section_name': 'Volunteers',
         'section_label': 'Volunteer',
@@ -874,14 +973,15 @@ def admin_volunteers(request):
         'headers': ['ID', 'Full Name', 'Email', 'Phone', 'Program', 'Status', 'Created'],
         'rows': [
             {
-                'cols': [item.volunteer_id, f"{item.first_name} {item.last_name}", item.email, item.phone_number, 
+                'cols': [item.volunteer_id, f"{item.first_name} {item.last_name}", item.email, item.phone_number,
                          item.program_id.title if item.program_id else '-', item.status, item.created_at.strftime('%Y-%m-%d')],
                 'review_url': reverse('admin_volunteer_review', args=[item.volunteer_id]),
                 'edit_url': reverse('admin_volunteer_edit', args=[item.volunteer_id]),
                 'delete_url': reverse('admin_volunteer_delete', args=[item.volunteer_id]),
             }
-            for item in items
+            for item in page_obj
         ],
+        'page_obj': page_obj,
     })
 
 
@@ -951,11 +1051,12 @@ def admin_volunteer_delete(request, volunteer_id):
 @login_required
 @ratelimit(key='user', method=ratelimit.ALL, rate='25/h', block=True)
 def admin_feedback(request):
-    feedback_list = Feedback.objects.all().order_by('-created_at')
+    qs = Feedback.objects.all().order_by('-created_at')
+    page_obj = _paginate(request, qs, 25)
     return render(request, 'core/admin_feedback_list.html', {
         'section_name': 'Feedback',
         'section_label': 'Feedback Item',
-        'feedback_list': feedback_list,
+        'page_obj': page_obj,
     })
 
 

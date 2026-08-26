@@ -17,6 +17,10 @@ class program(models.Model):
     image_url = models.URLField(max_length=250, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     week_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    two_week_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    four_week_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    eight_week_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
+    extra_week_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
 
     def __str__(self):
         return self.title
@@ -65,17 +69,19 @@ class volunteer(models.Model):
     def fee(self):
         if not self.program_id:
             return 0
-
-        if self.duration_weeks <= 2:
-            return self.program_id.week_fee * self.duration_weeks
-        elif self.duration_weeks <= 4:
-            return self.program_id.week_fee * self.duration_weeks
-        elif self.duration_weeks <= 8:
-            return self.program_id.week_fee * self.duration_weeks
+        p = self.program_id
+        weeks = self.duration_weeks
+        if weeks <= 1:
+            return p.week_fee
+        elif weeks <= 2:
+            return p.two_week_fee
+        elif weeks <= 4:
+            return p.four_week_fee
+        elif weeks <= 8:
+            return p.eight_week_fee
         else:
-            extra_weeks = self.duration_weeks - 8
-            extra_fee = extra_weeks * self.program_id.week_fee 
-            return self.program_id.week_fee * 8 + extra_fee
+            extra_weeks = weeks - 8
+            return p.eight_week_fee + extra_weeks * p.extra_week_fee
         
 
     def __str__(self):
@@ -365,6 +371,7 @@ class gallery(models.Model):
 
 # IMPACT / PROGRAM STORYTELLING
 class ImpactPageChoices(models.TextChoices):
+    HOME = 'home', 'Homepage'
     CHILDREN = 'children', 'Children Program'
     WOMEN = 'women', 'Women Empowerment'
     COMMUNITY = 'community', 'Regenerative Communities'

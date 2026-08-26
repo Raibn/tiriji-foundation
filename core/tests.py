@@ -15,6 +15,7 @@ class VolunteerFeeTests(SimpleTestCase):
         selected_program = program(
             title='Community Support',
             program_description='Support program',
+            week_fee=Decimal('60.00'),
             two_week_fee=Decimal('100.00'),
             four_week_fee=Decimal('180.00'),
             eight_week_fee=Decimal('320.00'),
@@ -88,6 +89,7 @@ class PublicWorkflowTests(TestCase):
         self.program = program.objects.create(
             title='Demo Mentorship',
             program_description='Mentorship program',
+            week_fee=Decimal('600.00'),
             two_week_fee=Decimal('1000.00'),
             four_week_fee=Decimal('1800.00'),
             eight_week_fee=Decimal('3200.00'),
@@ -241,6 +243,7 @@ class PaymentServiceTests(TestCase):
         selected_program = program.objects.create(
             title='Demo',
             program_description='Demo program',
+            week_fee=Decimal('60.00'),
             two_week_fee=Decimal('100.00'),
             four_week_fee=Decimal('180.00'),
             eight_week_fee=Decimal('320.00'),

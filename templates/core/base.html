@@ -3,17 +3,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Tiriji Foundation{% endblock %}</title>
-
-    <!-- Meta -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- ===== PRIMARY META ===== -->
+    <title>{% block title %}Tiriji Foundation — Meru, Kenya{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Tiriji Foundation connects volunteers, donors and partners to regenerate communities in Meru, Kenya through children care, women empowerment, vocational training and ecological practice.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Tiriji Foundation, volunteer Kenya, Meru Kenya, KACH children, women empowerment Kenya, IPI, community development, eco-center{% endblock %}">
+    <meta name="author" content="Tiriji Foundation">
+    <link rel="canonical" href="https://www.tirijifoundation.com{{ request.path }}">
+
+    <!-- ===== OPEN GRAPH ===== -->
+    <meta property="og:site_name" content="Tiriji Foundation">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="https://www.tirijifoundation.com{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}{% block og_title_inner %}Tiriji Foundation — Meru, Kenya{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Tiriji Foundation connects volunteers, donors and partners to regenerate communities in Meru, Kenya through children care, women empowerment, vocational training and ecological practice.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://www.tirijifoundation.com{% static 'images/logo-1.png' %}{% endblock %}">
+    <meta property="og:image:alt" content="Tiriji Foundation">
+    <meta property="og:locale" content="en_KE">
+
+    <!-- ===== TWITTER CARD ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@tirijifoundation">
+    <meta name="twitter:title" content="{% block twitter_title %}Tiriji Foundation — Meru, Kenya{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Tiriji Foundation connects volunteers, donors and partners to regenerate communities in Meru, Kenya.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}https://www.tirijifoundation.com{% static 'images/logo-1.png' %}{% endblock %}">
+
+    <!-- ===== ORGANISATION SCHEMA ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NGO",
+      "name": "Tiriji Foundation",
+      "alternateName": "International Peace Initiatives",
+      "url": "https://www.tirijifoundation.com",
+      "logo": "https://www.tirijifoundation.com{% static 'images/logo-1.png' %}",
+      "description": "Tiriji Foundation regenerates communities in Meru, Kenya through children care, women empowerment, vocational training, and ecological practice.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Kithoka, outskirts of Meru",
+        "addressLocality": "Meru",
+        "addressCountry": "KE",
+        "postalCode": "60200",
+        "postOfficeBoxNumber": "P.O. Box 599"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+254795444556",
+        "email": "info@tirijifoundation.com",
+        "contactType": "customer support"
+      },
+      "sameAs": [
+        "https://www.facebook.com/TirijiEcoCenter/"
+      ]
+    }
+    </script>
+
+    {% block extra_schema %}{% endblock %}
+
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <!-- Extra CSS -->
-    {% block extra_css %}
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 

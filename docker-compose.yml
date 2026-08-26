@@ -2,8 +2,8 @@
 services:
   web:
     build: .
-    command: > 
-      sh -c  "python manage.py collectstatic --noinput  && python manage.py runserver 0.0.0.0:8000"
+    command: >
+      sh -c "python manage.py collectstatic --noinput && gunicorn tiriji.wsgi:application -c gunicorn.conf"
     ports:
       - "8080:8000"
     env_file:

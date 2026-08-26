@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Page Not Found — Tiriji Foundation{% endblock %}
+
+{% block content %}
+<section class="page-hero programs-hero">
+    <div class="container page-hero-grid">
+        <div class="reveal-on-scroll">
+            <h1>Page Not Found</h1>
+            <p>The page you're looking for doesn't exist or may have moved.</p>
+            <div class="hero-actions" style="margin-top:2rem;">
+                <a href="/" class="btn btn-primary">Go Home</a>
+                <a href="/contact/" class="btn btn-secondary">Contact Us</a>
+            </div>
+        </div>
+        <div class="hero-proof glass-panel reveal-on-scroll">
+            <strong>404</strong>
+            <span>Nothing here</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
