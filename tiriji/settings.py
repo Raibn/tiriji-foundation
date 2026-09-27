@@ -34,17 +34,16 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.0', '0.0.0.0','https://tirijifoundation.org/', 'https://www.tirijifoundation.org/']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','0.0.0.0','tirijifoundation.org','www.tirijifoundation.org','tirijifoundation.onrender.com']
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS')
-if not DEBUG:
-    for host in ALLOWED_HOSTS:
-        if host in {'localhost', '127.0.0.1', '0.0.0.0', 'tirijifoundation.org/', 'www.tirijifoundation.org/'}:
-            continue
-        origin_host = f'*{host}' if host.startswith('.') else host
-        origin = f'https://{origin_host}'
-        if origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(origin)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://tirijifoundation.org,https://www.tirijifoundation.org,https://tirijifoundation.onrender.com',
+    ).split(',')
+    if origin.strip()
+]
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
