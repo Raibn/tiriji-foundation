@@ -32,22 +32,23 @@ if not SECRET_KEY:
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.0', '0.0.0.0','https://tirijifoundation.org/', 'https://www.tirijifoundation.org/']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','0.0.0.0','tirijifoundation.org','www.tirijifoundation.org','tirijifoundation.onrender.com']
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS')
+CSRF_TRUSTED_ORIGINS = [
+    'https://tirijifoundation.org',
+    'https://www.tirijifoundation.org',
+    'https://tirijifoundation.onrender.com',
+]
+configured_csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if configured_csrf_origins:
+    CSRF_TRUSTED_ORIGINS.extend(
+        origin.strip() for origin in configured_csrf_origins.split(',') if origin.strip()
+    )
+
 if not DEBUG:
-    for host in ALLOWED_HOSTS:
-        if host in {'localhost', '127.0.0.1', '0.0.0.0', 'tirijifoundation.org/', 'www.tirijifoundation.org/'}:
-        if host in {'localhost', '127.0.0.1', '0.0.0.0', 'tirijifoundation.org'}:
-            continue
-        origin_host = f'*{host}' if host.startswith('.') else host
-        origin = f'https://{origin_host}'
-        if origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(origin)
-
-if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SESSION_COOKIE_SECURE = True
