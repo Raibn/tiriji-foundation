@@ -2,7 +2,7 @@ name: Keep tirijifoundation.org Service Awake
 
 on:
   schedule:
-    # Everyday 24hours 
+    # Everyday 8mins 24/7 
     - cron: '*/8 * * * *'
   workflow_dispatch:   # allows manual trigger for testing
 
