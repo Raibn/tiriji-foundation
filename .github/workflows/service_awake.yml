@@ -1,0 +1,16 @@
+name: Keep tirijifoundation.org Service Awake
+
+on:
+  schedule:
+    # Everyday 24hours 
+    - cron: '*/8 * * * *'
+  workflow_dispatch:   # allows manual trigger for testing
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render service
+        run: |
+          curl -sf https://tirijifoundation.onrender.com/ \
+            || echo "service starting up"
