@@ -32,20 +32,23 @@ if not SECRET_KEY:
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1','0.0.0.0','tirijifoundation.org','www.tirijifoundation.org','tirijifoundation.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv(
-        'CSRF_TRUSTED_ORIGINS',
-        'https://tirijifoundation.org,https://www.tirijifoundation.org,https://tirijifoundation.onrender.com',
-    ).split(',')
-    if origin.strip()
+    'https://tirijifoundation.org',
+    'https://www.tirijifoundation.org',
+    'https://tirijifoundation.onrender.com',
 ]
+configured_csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if configured_csrf_origins:
+    CSRF_TRUSTED_ORIGINS.extend(
+        origin.strip() for origin in configured_csrf_origins.split(',') if origin.strip()
+    )
 
 if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SESSION_COOKIE_SECURE = True
