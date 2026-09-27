@@ -34,12 +34,12 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.0', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.0', '0.0.0.0','https://tirijifoundation.org/', 'https://www.tirijifoundation.org/']
 
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS')
 if not DEBUG:
     for host in ALLOWED_HOSTS:
-        if host in {'localhost', '127.0.0.1', '0.0.0.0'}:
+        if host in {'localhost', '127.0.0.1', '0.0.0.0', 'tirijifoundation.org/', 'www.tirijifoundation.org/'}:
             continue
         origin_host = f'*{host}' if host.startswith('.') else host
         origin = f'https://{origin_host}'
